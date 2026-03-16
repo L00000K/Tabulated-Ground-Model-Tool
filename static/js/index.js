@@ -8,8 +8,8 @@ async function loadModels() {
     if (models.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <p>No ground models yet. Create one to get started.</p>
-                <button class="btn btn-primary" onclick="showCreateModal()">+ New Model</button>
+                <p>No design ground models yet. Create one to get started.</p>
+                <button class="btn btn-primary" onclick="showCreateModal()">+ New DGM</button>
             </div>`;
         return;
     }
@@ -17,10 +17,11 @@ async function loadModels() {
     container.innerHTML = '<ul class="model-list">' + models.map(m => {
         const date = new Date(m.updated_at).toLocaleDateString();
         const strataCount = m.strata ? m.strata.length : 0;
+        const subtitle = m.title ? ` \u2013 ${esc(m.title)}` : '';
         return `
             <li class="model-item">
                 <div>
-                    <a href="/model/${m.id}">${esc(m.name)}</a>
+                    <a href="/model/${m.id}">${esc(m.name)}${subtitle}</a>
                     <div class="model-meta">
                         ${m.project ? esc(m.project) + ' &middot; ' : ''}
                         ${strataCount} strata &middot; Updated ${date}
@@ -48,10 +49,11 @@ function hideModal(id) {
 
 async function createModel() {
     const name = document.getElementById('new-name').value.trim();
-    if (!name) { alert('Name is required'); return; }
+    if (!name) { alert('DGM Reference is required'); return; }
 
     const body = {
         name,
+        title: document.getElementById('new-title').value.trim(),
         project: document.getElementById('new-project').value.trim(),
         location: document.getElementById('new-location').value.trim(),
         created_by: document.getElementById('new-created-by').value.trim(),
@@ -110,15 +112,12 @@ function esc(s) {
     return d.innerHTML;
 }
 
-// Close modals on overlay click
 document.querySelectorAll('.modal-overlay').forEach(el => {
     el.addEventListener('click', e => { if (e.target === el) el.classList.remove('active'); });
 });
 
-// Enter key in create modal
 document.getElementById('new-name').addEventListener('keydown', e => {
     if (e.key === 'Enter') createModel();
 });
 
-// ── Init ────────────────────────────────────────────────────────────
 loadModels();

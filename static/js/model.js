@@ -1,21 +1,17 @@
-// ── Model detail page: view, edit strata, export ────────────────────
+// ── Model detail page: view, edit DGM strata, export ────────────────
 
 let currentModel = null;
 
 const STRATUM_FIELDS = [
-    { key: 'loca_id',       label: 'LOCA_ID',       type: 'text' },
-    { key: 'geol_top',      label: 'GEOL_TOP',      type: 'number', step: '0.01', cls: 'depth-input' },
-    { key: 'geol_base',     label: 'GEOL_BASE',     type: 'number', step: '0.01', cls: 'depth-input' },
-    { key: 'geol_desc',     label: 'GEOL_DESC',     type: 'text' },
-    { key: 'geol_leg',      label: 'GEOL_LEG',      type: 'text' },
-    { key: 'geol_geol',     label: 'GEOL_GEOL',     type: 'text' },
-    { key: 'geol_geo2',     label: 'GEOL_GEO2',     type: 'text' },
-    { key: 'geol_stat',     label: 'GEOL_STAT',     type: 'text' },
-    { key: 'geol_bgs',      label: 'GEOL_BGS',      type: 'text' },
-    { key: 'geol_form',     label: 'GEOL_FORM',     type: 'text' },
-    { key: 'material_type', label: 'Material Type', type: 'text' },
-    { key: 'colour',        label: 'Colour',        type: 'text' },
-    { key: 'notes',         label: 'Notes',         type: 'text' },
+    { key: 'stratum_name',       label: 'Stratum',    width: '140px' },
+    { key: 'num_points',         label: 'Points',     width: '60px' },
+    { key: 'top_level_min',      label: 'Min.',       width: '70px' },
+    { key: 'top_level_max',      label: 'Max.',       width: '70px' },
+    { key: 'bottom_level_min',   label: 'Min.',       width: '70px' },
+    { key: 'bottom_level_max',   label: 'Max.',       width: '70px' },
+    { key: 'top_level_design',   label: 'Design',     width: '100px' },
+    { key: 'bottom_level_design', label: 'Design',    width: '100px' },
+    { key: 'thickness_design',   label: 'Design',     width: '80px' },
 ];
 
 // ── Load model ──────────────────────────────────────────────────────
@@ -36,8 +32,9 @@ async function loadModel() {
 
 function renderModel() {
     const m = currentModel;
-    document.title = `${m.name} — Ground Model`;
-    document.getElementById('model-title').textContent = m.name;
+    const label = m.title ? `${m.name} \u2013 ${m.title}` : m.name;
+    document.title = `${label} \u2014 DGM`;
+    document.getElementById('model-title').textContent = label;
 
     // Info fields
     const info = document.getElementById('model-info');
@@ -61,7 +58,7 @@ function renderModel() {
             </div>`;
     }
 
-    // Model actions (edit info)
+    // Model actions
     const actions = document.getElementById('model-actions');
     if (!IS_SHARED) {
         actions.innerHTML = `<button class="btn btn-sm btn-outline" onclick="editModelInfo()">Edit Info</button>`;
@@ -81,12 +78,12 @@ function renderModel() {
 
     // Share card
     if (!IS_SHARED) {
-        const shareCard = document.getElementById('share-card');
-        const shareUrl = `${window.location.origin}/shared/${m.share_id}`;
-        document.getElementById('share-url').value = shareUrl;
+        document.getElementById('share-url').value = `${window.location.origin}/shared/${m.share_id}`;
     }
 
     renderStrata();
+    renderNotes();
+    renderRationale();
 }
 
 function infoField(label, value) {
@@ -108,83 +105,83 @@ function renderStrata() {
     }
     empty.style.display = 'none';
 
-    tbody.innerHTML = strata.map(s => {
-        const thickness = (s.geol_base - s.geol_top).toFixed(2);
-        if (IS_SHARED) {
-            return `<tr>
-                <td>${esc(s.loca_id)}</td>
-                <td style="text-align:right">${Number(s.geol_top).toFixed(2)}</td>
-                <td style="text-align:right">${Number(s.geol_base).toFixed(2)}</td>
-                <td style="text-align:right;color:var(--text-muted)">${thickness}</td>
-                <td>${esc(s.geol_desc)}</td>
-                <td>${esc(s.geol_leg)}</td>
-                <td>${esc(s.geol_geol)}</td>
-                <td>${esc(s.geol_geo2)}</td>
-                <td>${esc(s.geol_stat)}</td>
-                <td>${esc(s.geol_bgs)}</td>
-                <td>${esc(s.geol_form)}</td>
-                <td>${esc(s.material_type)}</td>
-                <td>${esc(s.colour)}</td>
-                <td>${esc(s.notes)}</td>
-            </tr>`;
-        }
-        return `<tr data-id="${s.id}">
-            ${STRATUM_FIELDS.map(f => {
-                if (f.key === 'geol_top' || f.key === 'geol_base') {
-                    return `<td><input class="${f.cls || ''}" type="${f.type}" step="${f.step || ''}" value="${s[f.key]}" data-field="${f.key}" data-id="${s.id}" onchange="updateField(this)"></td>`;
-                }
-                return `<td><input type="${f.type}" value="${esc(String(s[f.key] || ''))}" data-field="${f.key}" data-id="${s.id}" onchange="updateField(this)"></td>`;
+    if (IS_SHARED) {
+        tbody.innerHTML = strata.map(s => `<tr>
+            ${STRATUM_FIELDS.map((f, i) => {
+                const align = i === 0 ? '' : ' style="text-align:center"';
+                return `<td${align}>${esc(s[f.key] || '')}</td>`;
             }).join('')}
-            <td style="text-align:right;color:var(--text-muted)">${thickness}</td>
-            <td><button class="btn btn-sm btn-danger" onclick="deleteStratum(${s.id})">Del</button></td>
+        </tr>`).join('');
+    } else {
+        tbody.innerHTML = strata.map(s => `<tr data-id="${s.id}">
+            ${STRATUM_FIELDS.map((f, i) => {
+                const style = i === 0 ? '' : ' style="text-align:center"';
+                return `<td${style}><input type="text" value="${esc(String(s[f.key] || ''))}" data-field="${f.key}" data-id="${s.id}" onchange="updateField(this)" style="width:${f.width}${i > 0 ? ';text-align:center' : ''}"></td>`;
+            }).join('')}
+            <td>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline" onclick="editStratumNotes(${s.id})">Notes</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteStratum(${s.id})">Del</button>
+                </div>
+            </td>
+        </tr>`).join('');
+    }
+}
+
+// ── Render notes table ──────────────────────────────────────────────
+
+function renderNotes() {
+    const strata = (currentModel.strata || []).filter(s => s.ref_number || s.stratum_notes);
+    const card = document.getElementById('notes-card');
+    const tbody = document.getElementById('notes-body');
+
+    if (strata.length === 0) {
+        card.style.display = 'none';
+        return;
+    }
+    card.style.display = '';
+    tbody.innerHTML = strata.map(s => {
+        const cleanName = (s.stratum_name || '').split('[')[0].trim();
+        return `<tr>
+            <td>${esc(s.ref_number)}</td>
+            <td><strong>${esc(cleanName)}</strong></td>
+            <td style="white-space:pre-wrap">${esc(s.stratum_notes)}</td>
         </tr>`;
     }).join('');
+}
 
-    // For editable mode, reorder columns: put thickness after geol_base and add actions
-    if (!IS_SHARED) {
-        // Re-render with inline editing layout
-        tbody.innerHTML = strata.map(s => {
-            const thickness = (s.geol_base - s.geol_top).toFixed(2);
-            return `<tr data-id="${s.id}">
-                <td><input type="text" value="${esc(s.loca_id || '')}" data-field="loca_id" data-id="${s.id}" onchange="updateField(this)"></td>
-                <td><input class="depth-input" type="number" step="0.01" value="${s.geol_top}" data-field="geol_top" data-id="${s.id}" onchange="updateField(this)"></td>
-                <td><input class="depth-input" type="number" step="0.01" value="${s.geol_base}" data-field="geol_base" data-id="${s.id}" onchange="updateField(this)"></td>
-                <td><span class="thickness">${thickness}</span></td>
-                <td><input type="text" value="${esc(s.geol_desc || '')}" data-field="geol_desc" data-id="${s.id}" onchange="updateField(this)"></td>
-                <td><input type="text" value="${esc(s.geol_leg || '')}" data-field="geol_leg" data-id="${s.id}" onchange="updateField(this)" style="width:60px"></td>
-                <td><input type="text" value="${esc(s.geol_geol || '')}" data-field="geol_geol" data-id="${s.id}" onchange="updateField(this)" style="width:80px"></td>
-                <td><input type="text" value="${esc(s.geol_geo2 || '')}" data-field="geol_geo2" data-id="${s.id}" onchange="updateField(this)" style="width:80px"></td>
-                <td><input type="text" value="${esc(s.geol_stat || '')}" data-field="geol_stat" data-id="${s.id}" onchange="updateField(this)" style="width:60px"></td>
-                <td><input type="text" value="${esc(s.geol_bgs || '')}" data-field="geol_bgs" data-id="${s.id}" onchange="updateField(this)" style="width:80px"></td>
-                <td><input type="text" value="${esc(s.geol_form || '')}" data-field="geol_form" data-id="${s.id}" onchange="updateField(this)"></td>
-                <td><input type="text" value="${esc(s.material_type || '')}" data-field="material_type" data-id="${s.id}" onchange="updateField(this)"></td>
-                <td><input type="text" value="${esc(s.colour || '')}" data-field="colour" data-id="${s.id}" onchange="updateField(this)" style="width:70px"></td>
-                <td><input type="text" value="${esc(s.notes || '')}" data-field="notes" data-id="${s.id}" onchange="updateField(this)"></td>
-                <td><button class="btn btn-sm btn-danger" onclick="deleteStratum(${s.id})">Del</button></td>
-            </tr>`;
-        }).join('');
+// ── Render rationale ────────────────────────────────────────────────
+
+function renderRationale() {
+    const card = document.getElementById('rationale-card');
+    const text = document.getElementById('rationale-text');
+    const btn = document.getElementById('edit-rationale-btn');
+
+    if (!currentModel.rationale && IS_SHARED) {
+        card.style.display = 'none';
+        return;
     }
+    card.style.display = '';
+    text.textContent = currentModel.rationale || '(No rationale provided)';
+    if (!IS_SHARED) btn.style.display = '';
 }
 
 // ── Stratum CRUD ────────────────────────────────────────────────────
 
 async function addStratum() {
-    const lastStratum = currentModel.strata[currentModel.strata.length - 1];
-    const nextTop = lastStratum ? lastStratum.geol_base : 0;
-    const nextBase = nextTop + 1;
+    const strata = currentModel.strata || [];
+    const nextRef = `[${strata.length + 1}]`;
 
     const res = await fetch(`/api/models/${MODEL_ID}/strata`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            geol_top: nextTop,
-            geol_base: nextBase,
-            geol_desc: '',
+            stratum_name: '',
+            ref_number: nextRef,
         }),
     });
     if (res.ok) {
         await loadModel();
-        // Focus last row's first input
         const rows = document.querySelectorAll('#strata-body tr');
         const lastRow = rows[rows.length - 1];
         if (lastRow) lastRow.querySelector('input')?.focus();
@@ -201,18 +198,24 @@ async function updateField(input) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: value }),
     });
+}
 
-    // Update thickness display if depth changed
-    if (field === 'geol_top' || field === 'geol_base') {
-        const row = input.closest('tr');
-        const topInput = row.querySelector('[data-field="geol_top"]');
-        const baseInput = row.querySelector('[data-field="geol_base"]');
-        const thicknessSpan = row.querySelector('.thickness');
-        if (topInput && baseInput && thicknessSpan) {
-            const t = (parseFloat(baseInput.value) - parseFloat(topInput.value)).toFixed(2);
-            thicknessSpan.textContent = t;
-        }
-    }
+async function editStratumNotes(id) {
+    const s = currentModel.strata.find(s => s.id === id);
+    if (!s) return;
+
+    const refNumber = prompt('Reference number (e.g. [1]):', s.ref_number);
+    if (refNumber === null) return;
+
+    const notes = prompt('Stratum notes/rationale:', s.stratum_notes);
+    if (notes === null) return;
+
+    await fetch(`/api/strata/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ref_number: refNumber, stratum_notes: notes }),
+    });
+    await loadModel();
 }
 
 async function deleteStratum(id) {
@@ -225,8 +228,10 @@ async function deleteStratum(id) {
 
 async function editModelInfo() {
     const m = currentModel;
-    const name = prompt('Model name:', m.name);
+    const name = prompt('DGM Reference:', m.name);
     if (name === null) return;
+    const title = prompt('Title:', m.title);
+    if (title === null) return;
     const project = prompt('Project:', m.project);
     if (project === null) return;
     const location = prompt('Location:', m.location);
@@ -239,7 +244,19 @@ async function editModelInfo() {
     await fetch(`/api/models/${MODEL_ID}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, project, location, created_by, notes }),
+        body: JSON.stringify({ name, title, project, location, created_by, notes }),
+    });
+    await loadModel();
+}
+
+async function editRationale() {
+    const rationale = prompt('Design Ground Model Rationale:', currentModel.rationale);
+    if (rationale === null) return;
+
+    await fetch(`/api/models/${MODEL_ID}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rationale }),
     });
     await loadModel();
 }

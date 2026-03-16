@@ -11,14 +11,14 @@
         <h1><a href="/">Tabulated Ground Model Tool</a></h1>
         <div class="btn-group">
             <button class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="showImportModal()">Import</button>
-            <button class="btn btn-primary" onclick="showCreateModal()">+ New Model</button>
+            <button class="btn btn-primary" onclick="showCreateModal()">+ New DGM</button>
         </div>
     </nav>
 
     <div class="container">
         <div class="card">
             <div class="card-header">
-                <h2>Ground Models</h2>
+                <h2>Design Ground Models</h2>
             </div>
             <div id="model-list"></div>
         </div>
@@ -27,11 +27,15 @@
     <!-- Create modal -->
     <div class="modal-overlay" id="create-modal">
         <div class="modal">
-            <h3>New Ground Model</h3>
+            <h3>New Design Ground Model</h3>
             <div class="form-grid" style="grid-template-columns:1fr">
                 <div class="form-group">
-                    <label>Model Name *</label>
-                    <input id="new-name" placeholder="e.g. Site A Ground Model">
+                    <label>DGM Reference *</label>
+                    <input id="new-name" placeholder="e.g. EW0414-DGM_11">
+                </div>
+                <div class="form-group">
+                    <label>Title</label>
+                    <input id="new-title" placeholder="e.g. South West Corner of MCA COW">
                 </div>
                 <div class="form-group">
                     <label>Project</label>

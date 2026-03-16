@@ -13,7 +13,7 @@
     </nav>
 
     <div class="container">
-        <!-- Share banner (shown when viewing via share link) -->
+        <!-- Share banner -->
         <div class="share-banner" id="share-banner" style="display:none">
             <span>Shared view — this model is read-only</span>
         </div>
@@ -36,31 +36,33 @@
             <input type="text" id="share-url" readonly style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-family:monospace;font-size:13px">
         </div>
 
-        <!-- Strata table -->
+        <!-- DGM Strata table -->
         <div class="card">
             <div class="card-header">
-                <h2>Strata (AGS4 GEOL)</h2>
+                <h2>Design Ground Model</h2>
                 <div class="btn-group" id="strata-actions"></div>
             </div>
             <div class="table-wrapper">
                 <table>
                     <thead>
                         <tr>
-                            <th>LOCA_ID</th>
-                            <th>GEOL_TOP (m)</th>
-                            <th>GEOL_BASE (m)</th>
-                            <th>Thickness (m)</th>
-                            <th>GEOL_DESC</th>
-                            <th>GEOL_LEG</th>
-                            <th>GEOL_GEOL</th>
-                            <th>GEOL_GEO2</th>
-                            <th>GEOL_STAT</th>
-                            <th>GEOL_BGS</th>
-                            <th>GEOL_FORM</th>
-                            <th>Material Type</th>
-                            <th>Colour</th>
-                            <th>Notes</th>
-                            <th id="actions-col" style="display:none">Actions</th>
+                            <th rowspan="2" style="min-width:140px">Stratum</th>
+                            <th rowspan="2">No. of<br>Points (top)</th>
+                            <th colspan="2">Top Level (m AOD)</th>
+                            <th colspan="2">Bottom Level (m AOD)</th>
+                            <th>Top Level<br>(m AOD)</th>
+                            <th>Bottom Level<br>(m AOD)</th>
+                            <th>Thickness<br>(m)</th>
+                            <th rowspan="2" id="actions-col" style="display:none">Actions</th>
+                        </tr>
+                        <tr>
+                            <th>Min.</th>
+                            <th>Max.</th>
+                            <th>Min.</th>
+                            <th>Max.</th>
+                            <th>Design</th>
+                            <th>Design</th>
+                            <th>Design</th>
                         </tr>
                     </thead>
                     <tbody id="strata-body">
@@ -71,10 +73,37 @@
                 <p>No strata added yet.</p>
             </div>
         </div>
+
+        <!-- Notes table -->
+        <div class="card" id="notes-card" style="display:none">
+            <div class="card-header">
+                <h2>Stratum Notes</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:50px">Ref</th>
+                            <th style="width:150px">Stratum</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="notes-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Rationale -->
+        <div class="card" id="rationale-card" style="display:none">
+            <div class="card-header">
+                <h2>Design Ground Model Rationale</h2>
+                <button class="btn btn-sm btn-outline" id="edit-rationale-btn" style="display:none" onclick="editRationale()">Edit</button>
+            </div>
+            <p id="rationale-text" style="white-space:pre-wrap;font-size:13px"></p>
+        </div>
     </div>
 
     <script>
-        // Determine mode from URL
         const pathParts = window.location.pathname.split('/');
         const IS_SHARED = pathParts[1] === 'shared';
         const MODEL_ID = IS_SHARED ? null : parseInt(pathParts[2]);
