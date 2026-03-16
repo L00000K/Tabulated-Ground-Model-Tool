@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ground Model</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h1><a href="/">Tabulated Ground Model Tool</a></h1>
+        <div class="btn-group" id="nav-actions"></div>
+    </nav>
+
+    <div class="container">
+        <!-- Share banner (shown when viewing via share link) -->
+        <div class="share-banner" id="share-banner" style="display:none">
+            <span>Shared view — this model is read-only</span>
+        </div>
+
+        <!-- Model info -->
+        <div class="card" id="model-info-card">
+            <div class="card-header">
+                <h2 id="model-title">Loading...</h2>
+                <div class="btn-group" id="model-actions"></div>
+            </div>
+            <div class="form-grid" id="model-info"></div>
+        </div>
+
+        <!-- Share link -->
+        <div class="card" id="share-card" style="display:none">
+            <div class="card-header">
+                <h2>Share</h2>
+                <button class="btn btn-sm btn-outline" onclick="copyShareLink()">Copy Link</button>
+            </div>
+            <input type="text" id="share-url" readonly style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-family:monospace;font-size:13px">
+        </div>
+
+        <!-- Strata table -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Strata (AGS4 GEOL)</h2>
+                <div class="btn-group" id="strata-actions"></div>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>LOCA_ID</th>
+                            <th>GEOL_TOP (m)</th>
+                            <th>GEOL_BASE (m)</th>
+                            <th>Thickness (m)</th>
+                            <th>GEOL_DESC</th>
+                            <th>GEOL_LEG</th>
+                            <th>GEOL_GEOL</th>
+                            <th>GEOL_GEO2</th>
+                            <th>GEOL_STAT</th>
+                            <th>GEOL_BGS</th>
+                            <th>GEOL_FORM</th>
+                            <th>Material Type</th>
+                            <th>Colour</th>
+                            <th>Notes</th>
+                            <th id="actions-col" style="display:none">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="strata-body">
+                    </tbody>
+                </table>
+            </div>
+            <div class="empty-state" id="empty-strata" style="display:none">
+                <p>No strata added yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Determine mode from URL
+        const pathParts = window.location.pathname.split('/');
+        const IS_SHARED = pathParts[1] === 'shared';
+        const MODEL_ID = IS_SHARED ? null : parseInt(pathParts[2]);
+        const SHARE_ID = IS_SHARED ? pathParts[2] : null;
+    </script>
+    <script src="/static/js/model.js"></script>
+</body>
+</html>

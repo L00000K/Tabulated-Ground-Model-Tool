@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabulated Ground Models</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h1><a href="/">Tabulated Ground Model Tool</a></h1>
+        <div class="btn-group">
+            <button class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="showImportModal()">Import</button>
+            <button class="btn btn-primary" onclick="showCreateModal()">+ New Model</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2>Ground Models</h2>
+            </div>
+            <div id="model-list"></div>
+        </div>
+    </div>
+
+    <!-- Create modal -->
+    <div class="modal-overlay" id="create-modal">
+        <div class="modal">
+            <h3>New Ground Model</h3>
+            <div class="form-grid" style="grid-template-columns:1fr">
+                <div class="form-group">
+                    <label>Model Name *</label>
+                    <input id="new-name" placeholder="e.g. Site A Ground Model">
+                </div>
+                <div class="form-group">
+                    <label>Project</label>
+                    <input id="new-project" placeholder="Project name or reference">
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input id="new-location" placeholder="Site location">
+                </div>
+                <div class="form-group">
+                    <label>Created By</label>
+                    <input id="new-created-by" placeholder="Your name">
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="new-notes" rows="2" placeholder="Additional notes"></textarea>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-outline" onclick="hideModal('create-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createModel()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import modal -->
+    <div class="modal-overlay" id="import-modal">
+        <div class="modal">
+            <h3>Import Ground Model</h3>
+            <div class="file-drop" id="file-drop" onclick="document.getElementById('file-input').click()">
+                <p>Click or drag a file here</p>
+                <p style="font-size:12px">.json or .csv files supported</p>
+                <input type="file" id="file-input" accept=".json,.csv">
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-outline" onclick="hideModal('import-modal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/index.js"></script>
+</body>
+</html>
